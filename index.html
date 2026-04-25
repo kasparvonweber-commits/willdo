@@ -152,7 +152,7 @@
   .fsname { font-size:.92rem; font-weight:500; color:var(--ink); line-height:1.35; }
   .fsname.link { cursor:pointer; transition:color .15s; }
   .fsname.link:hover { color:var(--blue); }
-  .fs-sub-cnt { font-size:.72rem; color:var(--ink-soft); margin-top:2px; }
+  .fs-sub-cnt { font-size:.75rem; color:var(--ink-soft); margin-top:2px; }
   .fsacts { display:flex; gap:.2rem; opacity:0; transition:opacity .15s; flex-shrink:0; }
   .fstep:hover .fsacts { opacity:1; }
   .fsbtn { background:none; border:none; cursor:pointer; color:var(--ink-faint); padding:2px 4px; border-radius:4px; font-size:.85rem; }
@@ -462,6 +462,8 @@ function renderTree(){
         const stepId = `${task.id}_${idx}`;
         const isStepOpen = expanded.has(stepId);
         const hasSubsteps = (step.substeps||[]).length > 0;
+        const subDone = (step.substeps||[]).filter(s=>s.done).length;
+        const subTotal = (step.substeps||[]).length;
 
         const srow=document.createElement('div'); srow.className='trow step-trow'; srow.style.marginBottom='4px';
         srow.innerHTML=`
@@ -470,6 +472,7 @@ function renderTree(){
           </div>
           <div class="ibody" onclick="goFocusStep('${task.id}',${idx})">
             <div class="iname link" style="${step.done?'text-decoration:line-through;opacity:0.4':''}">${esc(step.text)}</div>
+            ${subTotal ? `<div class="imeta"><span class="mcnt">${subDone}/${subTotal} delsteg</span></div>` : ''}
           </div>`;
         ch.appendChild(srow);
 
@@ -505,6 +508,9 @@ function renderFocusTask(tid){
   document.getElementById('ft-prog').style.width=st?(sd/st*100)+'%':'0%';
   const cont=document.getElementById('ft-steps'); cont.innerHTML='';
   steps.forEach((s,i)=>{
+    const subDone = (s.substeps||[]).filter(x=>x.done).length;
+    const subTotal = (s.substeps||[]).length;
+    
     const div=document.createElement('div'); div.className='fstep';
     div.draggable = true;
     div.ondragstart = (e) => handleDragStart(e, i);
@@ -515,7 +521,7 @@ function renderFocusTask(tid){
       <input type="checkbox" ${s.done?'checked':''} onclick="event.stopPropagation(); toggleStep(${i})">
       <div class="fsbody" onclick="goFocusStep('${tid}',${i})">
         <div class="fsname link" style="${s.done?'text-decoration:line-through;opacity:0.4':''}">${esc(s.text)}</div>
-        <div class="fs-sub-cnt">${(s.substeps||[]).length} delsteg</div>
+        ${subTotal ? `<div class="fs-sub-cnt">${subDone}/${subTotal} delsteg</div>` : ''}
       </div>
       <div class="fsacts"><button class="fsbtn" onclick="event.stopPropagation(); delStep('${tid}',${i})">✕</button></div>`;
     cont.appendChild(div);
